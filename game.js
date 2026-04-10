@@ -263,8 +263,16 @@ function clampToCeiling(e) {
 function clampToWalls(e) {
   const minX = GOAL_WIDTH;
   const maxX = canvas.width - GOAL_WIDTH - e.w;
-  if (e.x < minX) { e.x = minX; e.vx = 0; }
-  if (e.x > maxX) { e.x = maxX; e.vx = 0; }
+  const mid  = canvas.width / 2;
+
+  // Air-hockey style: each side stays in their own half
+  if (e.side === 'player') {
+    if (e.x < minX)          { e.x = minX;          e.vx = 0; }
+    if (e.x + e.w > mid - 2) { e.x = mid - 2 - e.w; e.vx = 0; }
+  } else {
+    if (e.x < mid + 2) { e.x = mid + 2; e.vx = 0; }
+    if (e.x > maxX)    { e.x = maxX;    e.vx = 0; }
+  }
 }
 
 function moveBall() {
@@ -534,7 +542,6 @@ function update() {
   clampToCeiling(ai);
   clampToWalls(player);
   clampToWalls(ai);
-  playerAICollision(); // solid body – no passing through
 
   moveBall();
   headCollision(player);

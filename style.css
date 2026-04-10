@@ -147,9 +147,9 @@ body {
   width: 100%;
   max-width: 800px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 10px 16px;
+  padding: 10px 16px 10px 20px;
   background: rgba(0,0,0,0.6);
   border-top: 2px solid #f5a623;
   flex-shrink: 0;
