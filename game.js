@@ -41,26 +41,77 @@ let state = {
   obstacles   : [],
 };
 
-// ── Input ──
+// ── Keyboard input ──
 const keys = {};
 document.addEventListener('keydown', e => { keys[e.code] = true;  });
 document.addEventListener('keyup',   e => { keys[e.code] = false; });
 
-// Mobile buttons
-const btnLeft  = document.getElementById('btn-left');
-const btnRight = document.getElementById('btn-right');
-const btnJump  = document.getElementById('btn-jump');
+// ── Virtual Joystick ──
+const joystickBase = document.getElementById('joystick-base');
+const joystickKnob = document.getElementById('joystick-knob');
+const JOY_RADIUS = 42;   // max knob travel (px)
+const JOY_DEAD   = 14;   // deadzone (px)
 
-function bindTouch(el, code) {
-  el.addEventListener('touchstart', e => { e.preventDefault(); keys[code] = true;  }, { passive: false });
-  el.addEventListener('touchend',   e => { e.preventDefault(); keys[code] = false; }, { passive: false });
-  el.addEventListener('mousedown',  () => keys[code] = true);
-  el.addEventListener('mouseup',    () => keys[code] = false);
-  el.addEventListener('mouseleave', () => keys[code] = false);
+const joy = { x: 0, y: 0, active: false, id: null };
+let joyWasUp = false;    // edge-detect for jump trigger
+
+function joyPos(clientX, clientY) {
+  const r  = joystickBase.getBoundingClientRect();
+  const cx = r.left + r.width  / 2;
+  const cy = r.top  + r.height / 2;
+  let dx = clientX - cx;
+  let dy = clientY - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist > JOY_RADIUS) { dx = dx / dist * JOY_RADIUS; dy = dy / dist * JOY_RADIUS; }
+  return { x: dx, y: dy };
 }
-bindTouch(btnLeft,  'ArrowLeft');
-bindTouch(btnRight, 'ArrowRight');
-bindTouch(btnJump,  'Space');
+
+function joyApply(x, y) {
+  joy.x = x; joy.y = y;
+  joystickKnob.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+joystickBase.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  joy.id = t.identifier; joy.active = true;
+  const p = joyPos(t.clientX, t.clientY);
+  joyApply(p.x, p.y);
+}, { passive: false });
+
+joystickBase.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.identifier === joy.id) {
+      const p = joyPos(t.clientX, t.clientY);
+      joyApply(p.x, p.y);
+    }
+  }
+}, { passive: false });
+
+['touchend', 'touchcancel'].forEach(evt => {
+  joystickBase.addEventListener(evt, e => {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+      if (t.identifier === joy.id) {
+        joy.active = false; joy.id = null;
+        joyWasUp = false;
+        joyApply(0, 0);
+      }
+    }
+  }, { passive: false });
+});
+
+// Mouse fallback for desktop testing
+joystickBase.addEventListener('mousedown', e => {
+  joy.active = true;
+  const p = joyPos(e.clientX, e.clientY);
+  joyApply(p.x, p.y);
+  const mm = ev => { const p = joyPos(ev.clientX, ev.clientY); joyApply(p.x, p.y); };
+  const mu = () => { joy.active = false; joyWasUp = false; joyApply(0, 0); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+  window.addEventListener('mousemove', mm);
+  window.addEventListener('mouseup', mu);
+});
 
 // ── Entities ──
 function makePlayer() {
@@ -360,15 +411,85 @@ function updateObstacles() {
 
 // ── Player input ──
 function handlePlayerInput() {
-  if (keys['ArrowLeft'])  { player.vx = -PLAYER_SPEED; player.facing = -1; }
-  else if (keys['ArrowRight']) { player.vx = PLAYER_SPEED; player.facing = 1; }
-  else                    { player.vx *= 0.75; }
+  if (joy.active) {
+    // ── Joystick left/right ──
+    if (joy.x < -JOY_DEAD) {
+      player.vx = -PLAYER_SPEED * Math.min(Math.abs(joy.x) / JOY_RADIUS, 1);
+      player.facing = -1;
+    } else if (joy.x > JOY_DEAD) {
+      player.vx = PLAYER_SPEED * Math.min(joy.x / JOY_RADIUS, 1);
+      player.facing = 1;
+    } else {
+      player.vx *= 0.75;
+    }
 
-  if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW']) && player.onGround) {
-    player.vy       = JUMP_FORCE;
-    player.onGround = false;
-    player.jumpsLeft = 0;
-    keys['Space'] = false; // consume
+    // ── Up = jump (edge-triggered so holding up doesn't spam) ──
+    const joyUp = joy.y < -JOY_DEAD * 1.2;
+    if (joyUp && !joyWasUp && player.onGround) {
+      player.vy = JUMP_FORCE;
+      player.onGround = false;
+    }
+    joyWasUp = joyUp;
+
+    // ── Down = dive (force player down mid-air) ──
+    if (joy.y > JOY_DEAD * 1.2 && !player.onGround) {
+      player.vy += 2.5;
+    }
+
+  } else {
+    // ── Keyboard fallback ──
+    if (keys['ArrowLeft'])       { player.vx = -PLAYER_SPEED; player.facing = -1; }
+    else if (keys['ArrowRight']) { player.vx =  PLAYER_SPEED; player.facing =  1; }
+    else                         { player.vx *= 0.75; }
+
+    if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW']) && player.onGround) {
+      player.vy = JUMP_FORCE;
+      player.onGround = false;
+      keys['Space'] = false;
+    }
+
+    // Down key = dive in air
+    if ((keys['ArrowDown'] || keys['KeyS']) && !player.onGround) {
+      player.vy += 2.5;
+    }
+  }
+}
+
+// ── Player ↔ AI solid collision ──
+function playerAICollision() {
+  const pL = player.x, pR = player.x + player.w;
+  const pT = player.y, pB = player.y + player.h;
+  const aL = ai.x,     aR = ai.x + ai.w;
+  const aT = ai.y,     aB = ai.y + ai.h;
+
+  // No overlap?
+  if (pR <= aL || pL >= aR || pB <= aT || pT >= aB) return;
+
+  const overlapX = Math.min(pR - aL, aR - pL);
+  const overlapY = Math.min(pB - aT, aB - pT);
+
+  if (overlapX <= overlapY) {
+    // Horizontal push-apart
+    const push = overlapX / 2;
+    if (player.x < ai.x) {
+      player.x -= push;
+      ai.x     += push;
+    } else {
+      player.x += push;
+      ai.x     -= push;
+    }
+    player.vx *= 0.3;
+    ai.vx = 0;
+  } else {
+    // Vertical push (land on top)
+    if (player.y < ai.y) {
+      player.y  = aT - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    } else {
+      ai.y  = pB;
+      ai.vy = 0;
+    }
   }
 }
 
@@ -413,6 +534,7 @@ function update() {
   clampToCeiling(ai);
   clampToWalls(player);
   clampToWalls(ai);
+  playerAICollision(); // solid body – no passing through
 
   moveBall();
   headCollision(player);
@@ -823,7 +945,7 @@ function loop() {
 
 // ── Boot ──
 updateHUD();
-showOverlay('⚽ UFL HEADBALL', 'Score 3 goals to win!\nArrow keys to move, Space to jump', 'KICK OFF!');
+showOverlay('⚽ UFL HEADBALL', 'Score 3 goals to win!\nArrows to move • Space to jump • Down to dive', 'KICK OFF!');
 
 // Unlock audio on first interaction
 document.addEventListener('click',     () => { try { getAudio().resume(); } catch(_){} }, { once: true });

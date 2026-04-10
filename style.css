@@ -142,38 +142,57 @@ body {
   box-shadow: 0 6px 24px rgba(245,166,35,0.7);
 }
 
-/* ── Mobile Controls ── */
+/* ── Mobile Controls – Joystick ── */
 #mobile-controls {
   width: 100%;
   max-width: 800px;
   display: flex;
-  justify-content: space-between;
-  padding: 8px 16px;
-  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
   background: rgba(0,0,0,0.6);
   border-top: 2px solid #f5a623;
   flex-shrink: 0;
 }
 
-.ctrl-btn {
-  flex: 1;
-  background: linear-gradient(135deg, #1e1e4a, #0d0d2e);
-  color: #f5a623;
-  border: 2px solid #f5a623;
-  border-radius: 10px;
-  font-size: 1.3rem;
-  font-weight: 900;
-  padding: 12px 0;
-  cursor: pointer;
-  touch-action: none;
-  transition: background 0.1s, transform 0.1s;
-  -webkit-user-select: none;
+#joystick-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
-.ctrl-btn:active {
+#joystick-base {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(245,166,35,0.1);
+  border: 2px solid rgba(245,166,35,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  touch-action: none;
+  cursor: pointer;
+}
+
+#joystick-knob {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #f5a623, #e8870a);
-  color: #000;
-  transform: scale(0.96);
+  border: 2px solid rgba(255,255,255,0.6);
+  position: absolute;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+
+#joystick-hint {
+  font-size: 0.55rem;
+  color: rgba(245,166,35,0.55);
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-align: center;
 }
 
 /* Hide mobile controls on desktop if a keyboard is likely present */
