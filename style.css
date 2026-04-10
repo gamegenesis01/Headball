@@ -1,0 +1,184 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  background: #0a0a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100dvh;
+  overflow: hidden;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+/* ── HUD ── */
+#hud {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(0,0,0,0.7);
+  border-bottom: 2px solid #f5a623;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#hud-left, #hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+#player-score, #ai-score {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 8px #f5a623;
+  min-width: 28px;
+  text-align: center;
+}
+
+#score-label, #score-label-ai {
+  font-size: 0.7rem;
+  color: #f5a623;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+#level-display {
+  font-size: 0.75rem;
+  color: #fff;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+#coins-display {
+  font-size: 0.75rem;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+/* ── Canvas ── */
+#gameCanvas {
+  display: block;
+  max-width: 800px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  image-rendering: pixelated;
+}
+
+/* ── Overlay ── */
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.75);
+  z-index: 100;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+#overlay-box {
+  background: linear-gradient(135deg, #1a1a3e, #0d0d22);
+  border: 3px solid #f5a623;
+  border-radius: 16px;
+  padding: 36px 48px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(245,166,35,0.4);
+}
+
+#overlay-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #f5a623;
+  text-shadow: 0 0 16px rgba(245,166,35,0.7);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+#overlay-sub {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+#overlay-btn {
+  background: linear-gradient(135deg, #f5a623, #e8870a);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 48px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 4px 16px rgba(245,166,35,0.5);
+}
+
+#overlay-btn:hover, #overlay-btn:active {
+  transform: scale(1.07);
+  box-shadow: 0 6px 24px rgba(245,166,35,0.7);
+}
+
+/* ── Mobile Controls ── */
+#mobile-controls {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  gap: 12px;
+  background: rgba(0,0,0,0.6);
+  border-top: 2px solid #f5a623;
+  flex-shrink: 0;
+}
+
+.ctrl-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #1e1e4a, #0d0d2e);
+  color: #f5a623;
+  border: 2px solid #f5a623;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  font-weight: 900;
+  padding: 12px 0;
+  cursor: pointer;
+  touch-action: none;
+  transition: background 0.1s, transform 0.1s;
+  -webkit-user-select: none;
+}
+
+.ctrl-btn:active {
+  background: linear-gradient(135deg, #f5a623, #e8870a);
+  color: #000;
+  transform: scale(0.96);
+}
+
+/* Hide mobile controls on desktop if a keyboard is likely present */
+@media (hover: hover) and (pointer: fine) {
+  #mobile-controls {
+    display: none;
+  }
+}

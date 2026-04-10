@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>UFL Headball</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- HUD -->
+  <div id="hud">
+    <div id="hud-left">
+      <span id="score-label">YOU</span>
+      <span id="player-score">0</span>
+    </div>
+    <div id="hud-center">
+      <span id="level-display">LEVEL 1</span>
+      <span id="coins-display">🪙 0</span>
+    </div>
+    <div id="hud-right">
+      <span id="ai-score">0</span>
+      <span id="score-label-ai">CPU</span>
+    </div>
+  </div>
+
+  <!-- Game Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Overlays -->
+  <div id="overlay" class="hidden">
+    <div id="overlay-box">
+      <div id="overlay-title"></div>
+      <div id="overlay-sub"></div>
+      <button id="overlay-btn">PLAY</button>
+    </div>
+  </div>
+
+  <!-- Mobile Controls -->
+  <div id="mobile-controls">
+    <button class="ctrl-btn" id="btn-left">&#9664;</button>
+    <button class="ctrl-btn" id="btn-jump">JUMP</button>
+    <button class="ctrl-btn" id="btn-right">&#9654;</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
